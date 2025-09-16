@@ -8,7 +8,6 @@ from logger import logger
 def get_reviews():
     """
     Получает и парсит отзывы с сайта turclub-pik.ru.
-    Возвращает список словарей с информацией об отзывах.
     """
     try:
         logger.info(f"Начинаем парсинг страницы: {SITE_URL}")
@@ -30,8 +29,6 @@ def get_reviews():
 
         for i, container in enumerate(review_containers):
             try:
-                logger.debug(f"Обрабатываем отзыв #{i + 1}")
-
                 # Извлекаем ID отзыва
                 review_id = extract_review_id(container, i)
 
@@ -56,7 +53,6 @@ def get_reviews():
                 }
 
                 reviews.append(review_data)
-                logger.debug(f"Обработан отзыв ID: {review_id}, рейтинг: {rating}, пользователь: {username}")
 
             except Exception as e:
                 logger.error(f"Ошибка при обработке отзыва: {e}")
@@ -75,7 +71,7 @@ def get_reviews():
 
 def extract_review_id(container, index):
     """
-    Извлекает уникальный идентификатор отзыва из data-fancybox атрибута.
+    Извлекает уникальный идентификатор отзыва.
     """
     try:
         # Ищем первую ссылку на фото
