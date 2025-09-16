@@ -37,3 +37,12 @@ crontab -e
 grep CRON /var/log/syslog
 
 Также у нас есть свой логгер, который пишет в logs/bot.log.
+
+
+
+Как итог, наш скрипт должен выглядеть вот так
+# Запуск бота каждый час с 9 до 19 часов
+0 9-22 * * * /Users/iskander/Documents/py/review_monitor_bot/.venv/bin/python3 /Users/iskander/Documents/py/review_monitor_bot/main.py >> /Users/iskander/Documents/py/review_monitor_bot/cron.log 2>&1
+
+# Очистка лога каждое воскресенье в 0:00 до 500 строк
+0 0 * * 0 tail -n 500 /Users/iskander/Documents/py/review_monitor_bot/cron.log > /Users/iskander/Documents/py/review_monitor_bot/cron.log.tmp && mv /Users/iskander/Documents/py/review_monitor_bot/cron.log.tmp /Users/iskander/Documents/py/review_monitor_bot/cron.log
