@@ -42,7 +42,7 @@ grep CRON /var/log/syslog
 
 Как итог, наш скрипт должен выглядеть вот так
 # Запуск бота каждый день/месяц/год раз в час с 9 до 19 часов
-0 9-19 * * * /usr/bin/python3 /root/review_alert/main.py >> /root/review_alert/log/cron.log 2>&1
+*/2 * * * * /root/review_alert/venv/bin/python /root/review_alert/main.py >> /root/review_alert/logs/cron.log 2>&1
 
 # Очистка лога каждое воскресенье в 0:00 до 500 строк
 0 0 * * 0 tail -n 500 /root/review_alert/log/cron.log > /root/review_alert/log/cron.log.tmp && mv /root/review_alert/log/cron.log.tmp /root/review_alert/log/cron.log
