@@ -1,7 +1,10 @@
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
+# Определяем базовую директорию проекта
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 # Получаем список chat_id, разделенных запятыми, и преобразуем в список чисел

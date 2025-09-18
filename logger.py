@@ -1,14 +1,18 @@
 import logging
 from logging.handlers import RotatingFileHandler
 import os
+from config import BASE_DIR
+
+# Абсолютный путь к папке логов
+LOG_DIR = os.path.join(BASE_DIR, 'logs')
 
 def setup_logger():
     """
     Настройка системы логирования с ротацией файлов.
     """
     # Создаем папку для логов, если ее нет
-    if not os.path.exists('logs'):
-        os.makedirs('logs')
+    if not os.path.exists(LOG_DIR):
+        os.makedirs(LOG_DIR)
 
     # Создаем логгер
     logger = logging.getLogger('review_bot')
@@ -18,8 +22,9 @@ def setup_logger():
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     # Обработчик для записи в файл с ротацией
+    log_file = os.path.join(LOG_DIR, 'bot.log')
     file_handler = RotatingFileHandler(
-        'logs/bot.log',
+        log_file,
         maxBytes=1*1024*1024,  # 1 MB
         backupCount=5,
         encoding='utf-8'

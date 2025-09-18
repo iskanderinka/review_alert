@@ -1,10 +1,15 @@
 import asyncio
+import os
+import sys
 from storage import load_processed_reviews, add_processed_review
 from parser import get_reviews
 from bot import send_telegram_alert
 from logger import logger
 import telegram
-from config import BOT_TOKEN, CHAT_IDS
+from config import BOT_TOKEN, CHAT_IDS, BASE_DIR
+
+# Устанавливаем рабочую директорию
+os.chdir(BASE_DIR)
 
 
 async def check_bot_token():
@@ -68,7 +73,7 @@ async def main():
         processed_reviews = load_processed_reviews()
         logger.info(f"Загружено {len(processed_reviews)} обработанных отзывов")
 
-        # Получаем новые отзывы с сайта (синхронная функция)
+        # Получаем новые отзывы с сайта
         reviews = get_reviews()
 
         if not reviews:
@@ -111,5 +116,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    # Запускаем асинхронную функцию
     asyncio.run(main())
