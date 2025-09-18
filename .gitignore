@@ -1,0 +1,41 @@
+# Файлы окружения
+.env
+.env.*
+
+# Логи
+logs/
+*.log
+
+# Питон
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Базы данных и хранилища
+*.db
+*.sqlite
+processed_reviews.json
+
+# Временные файлы отладки
+debug_page.html
+debug_full_page.html
+structure_analysis.txt
+last_run.txt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Операционные системы
+.DS_Store
+Thumbs.db
