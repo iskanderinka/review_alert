@@ -14,7 +14,7 @@ async def check_bot_token():
         bot_info = await bot.get_me()
         logger.info(f"Бот {bot_info.username} успешно авторизован")
         return True
-    except telegram.error.InvalidToken:
+    except telegram.error.Forbidden:
         logger.error("Неверный токен бота. Проверьте правильность BOT_TOKEN в .env файле.")
         return False
     except Exception as e:
@@ -37,7 +37,7 @@ async def verify_chat_ids():
             await bot.get_chat(chat_id)
             valid_chat_ids.append(chat_id)
             logger.info(f"Chat ID {chat_id} валиден")
-        except telegram.error.Unauthorized:
+        except telegram.error.Forbidden:
             logger.error(f"Chat ID {chat_id} невалиден или бот заблокирован")
         except Exception as e:
             logger.error(f"Ошибка для chat ID {chat_id}: {e}")

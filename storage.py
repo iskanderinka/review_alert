@@ -1,5 +1,7 @@
 import json
 import os
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STORAGE_FILE = os.path.join(BASE_DIR, 'processed_reviews.json')
 from logger import logger
 
 # Имя файла для хранения обработанных отзывов

@@ -34,7 +34,7 @@ async def send_telegram_alert(review_data):
             logger.info(f"Уведомление об отзыве {review_data['id']} отправлено в Telegram для chat_id: {chat_id}")
             success_count += 1
 
-        except telegram.error.Unauthorized as e:
+        except telegram.error.Forbidden as e:
             logger.error(f"Ошибка авторизации для chat_id {chat_id}: {e}. Возможно, бот заблокирован.")
         except telegram.error.BadRequest as e:
             logger.error(f"Неверный запрос для chat_id {chat_id}: {e}. Проверьте правильность chat_id.")
