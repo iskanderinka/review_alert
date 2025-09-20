@@ -1,4 +1,3 @@
-# bot.py
 import asyncio
 import telegram
 import time
@@ -64,4 +63,26 @@ async def send_telegram_alert(review_data):
     logger.info(f"Отправлено {success_count} из {total_count} уведомлений")
     return success_count > 0
 
-# format_alert_message функция остается без изменений
+
+def format_alert_message(review_data):
+    """
+    Форматирует сообщение о негативном отзыве для Telegram.
+    """
+    rating = review_data['rating']
+    username = review_data['username']
+    text = review_data['text']
+    link = review_data['link']
+
+    # Создаем строку с звездочками для наглядности
+    stars = "★" * rating + "☆" * (5 - rating)
+
+    # Форматируем сообщение с использованием HTML-разметки
+    message = (
+        f"⚠️ <b>Негативный отзыв</b> ({rating}/5)\n\n"
+        f"<b>Пользователь:</b> {username}\n"
+        f"<b>Рейтинг:</b> {stars}\n\n"
+        f"<b>Текст отзыва:</b>\n{text[:300]}{'...' if len(text) > 300 else ''}\n\n"
+        f"<a href='{link}'>Ссылка на поход</a>"
+    )
+
+    return message
