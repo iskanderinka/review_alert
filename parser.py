@@ -22,9 +22,6 @@ def get_reviews():
         # Ищем все контейнеры с отзывами
         review_containers = soup.select(SELECTORS['review_container'])
         logger.info(f"Найдено {len(review_containers)} контейнеров отзывов")
-
-        # Ограничиваемся первыми 20 отзывами
-        review_containers = review_containers[:20]
         reviews = []
 
         for i, container in enumerate(review_containers):
