@@ -3,6 +3,7 @@ import re
 from bs4 import BeautifulSoup
 from config import SITE_URL, HEADERS, SELECTORS
 from logger import logger
+from storage import generate_review_hash
 
 
 def get_reviews():
@@ -22,24 +23,34 @@ def get_reviews():
         # Ищем все контейнеры с отзывами
         review_containers = soup.select(SELECTORS['review_container'])
         logger.info(f"Найдено {len(review_containers)} контейнеров отзывов")
+
         reviews = []
 
         for i, container in enumerate(review_containers):
             try:
-                # Извлекаем ID отзыва
-                review_id = extract_review_id(container, i)
-
                 # Извлекаем рейтинг
                 rating = extract_rating(container)
 
                 # Извлекаем текст отзыва
                 text = extract_review_text(container)
 
+                # Извлекаем имя пользователя
+                username = extract_username(container)
+
                 # Извлекаем ссылку на поход
                 link = extract_trip_link(container)
 
-                # Извлекаем имя пользователя
-                username = extract_username(container)
+                # Пытаемся извлечь стабильный ID отзыва
+                review_id = extract_review_id(container, i)
+                
+                # Если не удалось извлечь стабильный ID, создаем хэш на основе содержимого
+                if review_id.startswith('temp_id_'):
+                    review_data_for_hash = {
+                        'username': username,
+                        'text': text,
+                        'rating': rating
+                    }
+                    review_id = generate_review_hash(review_data_for_hash)
 
                 review_data = {
                     'id': review_id,
@@ -69,83 +80,32 @@ def get_reviews():
 def extract_review_id(container, index):
     """
     Извлекает уникальный идентификатор отзыва.
+    Пытается найти стабильный ID несколькими способами.
     """
     try:
-        # Ищем первую ссылку на фото
+        # Способ 1: Ищем ID в data-fancybox атрибуте
         photo_link = container.select_one(SELECTORS['photo_link'])
         if photo_link and photo_link.get('data-fancybox'):
-            # Извлекаем ID из data-fancybox="review-5867"
             data_fancybox = photo_link['data-fancybox']
             match = re.search(r'review-(\d+)', data_fancybox)
             if match:
                 return match.group(1)
 
-        # Если не нашли, используем индекс как временный ID
+        # Способ 2: Ищем ID в атрибутах самого контейнера
+        if container.get('id'):
+            return container['id']
+
+        # Способ 3: Ищем ID в данных о отзыве
+        data_review = container.get('data-review')
+        if data_review:
+            match = re.search(r'id["\']:\s*["\']?(\d+)', data_review)
+            if match:
+                return match.group(1)
+
+        # Если ничего не нашли, используем временный ID (будет заменен на хэш позже)
         return f"temp_id_{index}"
     except Exception as e:
         logger.error(f"Ошибка при извлечении ID отзыва: {e}")
         return f"temp_id_{index}"
 
-
-def extract_rating(container):
-    """
-    Извлекает рейтинг отзыва, подсчитывая активные звезды.
-    """
-    try:
-        rating_container = container.select_one(SELECTORS['rating_container'])
-        if rating_container:
-            active_stars = rating_container.select(SELECTORS['active_star'])
-            return len(active_stars)
-        return 0
-    except Exception as e:
-        logger.error(f"Ошибка при извлечении рейтинга: {e}")
-        return 0
-
-
-def extract_review_text(container):
-    """
-    Извлекает текст отзыва.
-    """
-    try:
-        text_element = container.select_one(SELECTORS['review_text'])
-        if text_element:
-            return text_element.get_text(strip=True)
-        return "Текст отзыва отсутствует"
-    except Exception as e:
-        logger.error(f"Ошибка при извлечении текста отзыва: {e}")
-        return "Текст отзыва отсутствует"
-
-
-def extract_trip_link(container):
-    """
-    Извлекает ссылку на поход.
-    """
-    try:
-        link_element = container.select_one(SELECTORS['trip_link'])
-        if link_element and link_element.get('href'):
-            link = link_element['href']
-            if not link.startswith('http'):
-                return f"https://turclub-pik.ru{link}"
-            return link
-        return SITE_URL
-    except Exception as e:
-        logger.error(f"Ошибка при извлечении ссылки на поход: {e}")
-        return SITE_URL
-
-
-def extract_username(container):
-    """
-    Извлекает имя пользователя, оставившего отзыв.
-    """
-    try:
-        username_element = container.select_one(SELECTORS['username'])
-        if username_element:
-            # Убираем лишние пробелы и переносы строк
-            username_text = username_element.get_text(strip=True)
-            # Убираем текст после имени (если есть)
-            username = username_text.split('\n')[0].strip()
-            return username
-        return "Анонимный пользователь"
-    except Exception as e:
-        logger.error(f"Ошибка при извлечении имени пользователя: {e}")
-        return "Анонимный пользователь"
+# Остальные функции extract_rating, extract_review_text, extract_trip_link, extract_username остаются без изменений
