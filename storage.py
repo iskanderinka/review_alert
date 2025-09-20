@@ -53,7 +53,6 @@ def add_processed_review(review_id):
 def generate_review_hash(review_data):
     """
     Генерирует хэш на основе содержимого отзыва для создания уникального идентификатора.
-    Используется как fallback, когда нельзя извлечь стабильный ID из HTML.
     """
     content = f"{review_data['username']}_{review_data['text']}_{review_data['rating']}"
     return hashlib.md5(content.encode('utf-8')).hexdigest()
