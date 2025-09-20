@@ -108,4 +108,66 @@ def extract_review_id(container, index):
         logger.error(f"Ошибка при извлечении ID отзыва: {e}")
         return f"temp_id_{index}"
 
-# Остальные функции extract_rating, extract_review_text, extract_trip_link, extract_username остаются без изменений
+
+def extract_rating(container):
+    """
+    Извлекает рейтинг отзыва, подсчитывая активные звезды.
+    """
+    try:
+        rating_container = container.select_one(SELECTORS['rating_container'])
+        if rating_container:
+            active_stars = rating_container.select(SELECTORS['active_star'])
+            return len(active_stars)
+        return 0
+    except Exception as e:
+        logger.error(f"Ошибка при извлечении рейтинга: {e}")
+        return 0
+
+
+def extract_review_text(container):
+    """
+    Извлекает текст отзыва.
+    """
+    try:
+        text_element = container.select_one(SELECTORS['review_text'])
+        if text_element:
+            return text_element.get_text(strip=True)
+        return "Текст отзыва отсутствует"
+    except Exception as e:
+        logger.error(f"Ошибка при извлечении текста отзыва: {e}")
+        return "Текст отзыва отсутствует"
+
+
+def extract_trip_link(container):
+    """
+    Извлекает ссылку на поход.
+    """
+    try:
+        link_element = container.select_one(SELECTORS['trip_link'])
+        if link_element and link_element.get('href'):
+            link = link_element['href']
+            if not link.startswith('http'):
+                return f"https://turclub-pik.ru{link}"
+            return link
+        return SITE_URL
+    except Exception as e:
+        logger.error(f"Ошибка при извлечении ссылки на поход: {e}")
+        return SITE_URL
+
+
+def extract_username(container):
+    """
+    Извлекает имя пользователя, оставившего отзыв.
+    """
+    try:
+        username_element = container.select_one(SELECTORS['username'])
+        if username_element:
+            # Убираем лишние пробелы и переносы строк
+            username_text = username_element.get_text(strip=True)
+            # Убираем текст после имени (если есть)
+            username = username_text.split('\n')[0].strip()
+            return username
+        return "Анонимный пользователь"
+    except Exception as e:
+        logger.error(f"Ошибка при извлечении имени пользователя: {e}")
+        return "Анонимный пользователь"
