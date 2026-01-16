@@ -22,8 +22,14 @@ pip install -r requirements.txt
 
 
 crontab -e
-# Запуск бота каждый день/месяц/год раз в час с 9 до 19 часов
-0 9-19 * * * /usr/bin/python3 /root/review_alert/main.py >> /root/review_alert/logs/cron.log 2>&1
+# Запуск бота каждый день/месяц/год раз в два часа с 9 до 19 часов
+0 9,11,13,15,17,19 * * * /home/root/review_alert/venv/bin/python /home/root/review_alert/main.py >> /home/root/review_alert/logs/cron.log 2>&1
 
-# Очистка лога каждое воскресенье в 0:00 до 500 строк
-0 0 * * 0 tail -n 500 /root/review_alert/logs/cron.log > /root/review_alert/logs/cron.log.tmp && mv /root/review_alert/logs/cron.log.tmp /root/review_alert/logs/cron.log
+# Очистка крон лога каждый понедельник в 0:00 до 2000 строк
+0 0 * * 1 tail -n 2000 /home/root/review_alert/logs/cron.log > /home/root/review_alert/logs/cron.log.tmp && mv /home/root/review_alert/logs/cron.log.tmp /home/root/review_alert/logs/cron.log
+
+# Очистка бот лога каждый понедельник в 0:00 до 2000 строк
+0 0 * * 1 tail -n 2000 /home/root/review_alert/logs/bot.log > /home/root/review_alert/logs/bot.log.tmp && mv /home/root/review_alert/logs/bot.log.tmp /home/root/review_alert/logs/bot.log
+
+# Напоминание об обновление системного гайда
+0 0 1 * * sed -i "s/Последнее обновление: .*/Последнее обновление: $(date)/" /home/iskan_der/system_services_guide.md
