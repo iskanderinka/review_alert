@@ -7,73 +7,43 @@ from bot import send_telegram_alert
 from logger import logger
 import telegram
 from config import BOT_TOKEN, CHAT_IDS, BASE_DIR
+from proxy_bot import get_bot  # импортируем
 
 # Устанавливаем рабочую директорию
 os.chdir(BASE_DIR)
 
 
 async def check_bot_token():
-    """Проверяет валидность токена бота с механизмом повторных попыток"""
-    max_retries = 3
-    retry_delay = 2  # секунды
-    
-    for attempt in range(max_retries):
-        try:
-            bot = telegram.Bot(token=BOT_TOKEN)
-            bot_info = await bot.get_me()
-            logger.info(f"Бот {bot_info.username} успешно авторизован")
-            return True
-        except (telegram.error.TimedOut, telegram.error.NetworkError) as e:
-            if attempt < max_retries - 1:
-                logger.warning(f"Попытка {attempt + 1}/{max_retries} проверки токена не удалась. Повтор через {retry_delay} сек.: {e}")
-                await asyncio.sleep(retry_delay)
-                retry_delay *= 2
-            else:
-                logger.error(f"Все {max_retries} попыток проверки токена не удались: {e}")
-                return False
-        except telegram.error.Forbidden:
-            logger.error("Неверный токен бота. Проверьте правильность BOT_TOKEN в .env файле.")
-            return False
-        except Exception as e:
-            logger.error(f"Ошибка при проверке токена бота: {e}")
-            return False
-
+    """Проверяет валидность токена бота с использованием прокси."""
+    bot = get_bot()
+    try:
+        bot_info = await bot.get_me()
+        logger.info(f"Бот {bot_info.username} успешно авторизован")
+        return True
+    except Exception as e:
+        logger.error(f"Ошибка при проверке токена бота: {e}")
+        return False
 
 async def verify_chat_ids():
-    """Проверяет валидность chat_id с механизмом повторных попыток"""
+    """Проверяет валидность chat_id с использованием прокси."""
     if not CHAT_IDS:
         logger.error("Не указаны chat_id в файле .env")
         return []
 
     valid_chat_ids = []
-    max_retries = 3
-    retry_delay = 2  # секунды
+    bot = get_bot()  # получаем бота с прокси
 
     for chat_id in CHAT_IDS:
-        for attempt in range(max_retries):
-            try:
-                bot = telegram.Bot(token=BOT_TOKEN)
-                # Пробуем получить информацию о чате
-                await bot.get_chat(chat_id)
-                valid_chat_ids.append(chat_id)
-                logger.info(f"Chat ID {chat_id} валиден")
-                break  # Успешно проверили, выходим из цикла повторных попыток
-            except (telegram.error.TimedOut, telegram.error.NetworkError) as e:
-                if attempt < max_retries - 1:
-                    logger.warning(f"Попытка {attempt + 1}/{max_retries} проверки chat_id {chat_id} не удалась. Повтор через {retry_delay} сек.: {e}")
-                    await asyncio.sleep(retry_delay)
-                    retry_delay *= 2
-                else:
-                    logger.error(f"Все {max_retries} попыток проверки chat_id {chat_id} не удались: {e}")
-            except telegram.error.Forbidden:
-                logger.error(f"Chat ID {chat_id} невалиден или бот заблокирован")
-                break  # Не будем повторять для этой ошибки
-            except Exception as e:
-                logger.error(f"Ошибка для chat ID {chat_id}: {e}")
-                break  # Не будем повторять для других ошибок
+        try:
+            await bot.get_chat(chat_id)
+            valid_chat_ids.append(chat_id)
+            logger.info(f"Chat ID {chat_id} валиден")
+        except telegram.error.Forbidden:
+            logger.error(f"Chat ID {chat_id} невалиден или бот заблокирован")
+        except Exception as e:
+            logger.error(f"Ошибка для chat ID {chat_id}: {e}")
 
     return valid_chat_ids
-
 
 async def main():
     """
