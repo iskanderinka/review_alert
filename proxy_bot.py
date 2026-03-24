@@ -1,7 +1,6 @@
 import asyncio
-import aiohttp
-from aiohttp_socks import ProxyConnector
 from telegram import Bot
+from telegram.request import HTTPXRequest
 from config import PROXY_URL, BOT_TOKEN
 from logger import logger
 
@@ -13,9 +12,9 @@ def get_bot():
     if _bot is None:
         if PROXY_URL:
             logger.info(f"Используем прокси: {PROXY_URL}")
-            connector = ProxyConnector.from_url(PROXY_URL)
-            session = aiohttp.ClientSession(connector=connector)
-            _bot = Bot(token=BOT_TOKEN, session=session)
+            request = HTTPXRequest(proxy_url=PROXY_URL)
+            _bot = Bot(token=BOT_TOKEN, request=request)
         else:
+            logger.info("Прокси не настроен, используем прямое подключение")
             _bot = Bot(token=BOT_TOKEN)
     return _bot
